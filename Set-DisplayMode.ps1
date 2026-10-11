@@ -1,5 +1,6 @@
-﻿# Sets the Studio Display XDR to 5120x2880 at the highest refresh Windows offers, and 200% scaling.
-# Run after the display is detected properly (EDID present). Safe to re-run.
+# Sets the primary display to 5120x2880 at the highest refresh Windows offers.
+# -ListOnly prints the offered modes and current mode without changing anything.
+param([switch]$ListOnly)
 $src = @'
 using System; using System.Runtime.InteropServices;
 public static class DM {
@@ -18,20 +19,21 @@ public static class DM {
  [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int ChangeDisplaySettingsExW(string dev, ref DEVMODE dm, IntPtr h, uint flags, IntPtr p);
 }
 '@
-Add-Type -TypeDefinition $src
+if (-not ('DM' -as [type])) { Add-Type -TypeDefinition $src }
 Add-Type -AssemblyName System.Windows.Forms
 $dev = [System.Windows.Forms.Screen]::PrimaryScreen.DeviceName
 $m = New-Object DM+DEVMODE; $m.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($m)
+[DM]::EnumDisplaySettingsW($dev, -1, [ref]$m) | Out-Null   # ENUM_CURRENT_SETTINGS
+"Current: $($m.dmPelsWidth)x$($m.dmPelsHeight) @ $($m.dmDisplayFrequency) Hz"
 $best = $null; $i = 0; $modes = @{}
 while ([DM]::EnumDisplaySettingsW($dev, $i, [ref]$m)) {
   $k = "$($m.dmPelsWidth)x$($m.dmPelsHeight)"; if (-not $modes[$k] -or $modes[$k] -lt $m.dmDisplayFrequency) { $modes[$k] = $m.dmDisplayFrequency }
   if ($m.dmPelsWidth -eq 5120 -and $m.dmPelsHeight -eq 2880 -and $m.dmBitsPerPel -eq 32 -and ($null -eq $best -or $m.dmDisplayFrequency -gt $best.dmDisplayFrequency)) { $best = $m }
   $i++
 }
-"Modes offered (max Hz): " + (($modes.GetEnumerator() | Sort-Object { [int]($_.Key -split 'x')[0] } -Descending | ForEach-Object { "$($_.Key)@$($_.Value)" }) -join ', ')
-if ($null -eq $best) { "5120x2880 is NOT offered. The display is still not detected correctly (check EDID / driver)."; exit 1 }
-$best.dmFields = 0x180000 -bor 0x400000   # PELSWIDTH|PELSHEIGHT|DISPLAYFREQUENCY
+"Modes offered (max Hz): " + (($modes.GetEnumerator() | Sort-Object { [int]($_.Key -split 'x')[0] } -Descending | Select-Object -First 6 | ForEach-Object { "$($_.Key)@$($_.Value)" }) -join ', ')
+if ($ListOnly) { exit 0 }
+if ($null -eq $best) { "5120x2880 is not offered. The display is not detected correctly (apply the fix first)."; exit 1 }
+$best.dmFields = 0x180000 -bor 0x400000   # PELSWIDTH | PELSHEIGHT | DISPLAYFREQUENCY
 $r = [DM]::ChangeDisplaySettingsExW($dev, [ref]$best, [IntPtr]::Zero, 1, [IntPtr]::Zero)  # CDS_UPDATEREGISTRY
-"ChangeDisplaySettings result: $r (0 = OK)  ->  5120x2880 @ $($best.dmDisplayFrequency) Hz"
-
-"Scaling: Windows picks 200% as recommended for this panel. Use .\Display-Color.ps1 dpi <n> to step up or down."
+"ChangeDisplaySettings result: $r (0 = OK) -> 5120x2880 @ $($best.dmDisplayFrequency) Hz"

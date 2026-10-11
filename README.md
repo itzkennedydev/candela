@@ -1,8 +1,12 @@
-# Studio Display XDR on Windows (NVIDIA) — detection fix and display tools
+# Candela
+
+**Apple Studio Display XDR, at home on Windows.**
 
 Apple's **Studio Display XDR (2026)** connected to a Windows PC over a DisplayPort → USB-C cable often shows up as
-**"Generic Non-PnP Monitor" at 640x480** with no other resolutions. This repo contains the fix and a few small
-PowerShell tools to get the display to its full resolution, 10-bit output, Auto Color Management and HDR.
+**"Generic Non-PnP Monitor" at 640x480** with no other resolutions. Candela fixes that and gives you a small,
+clean app to run the display at full 5K, 10-bit, with HDR and Auto Color Management.
+
+![Candela](docs/screenshot.png)
 
 No Thunderbolt port is needed on the PC. A bidirectional DisplayPort 1.4/2.1 → USB-C cable from the GPU's
 DisplayPort output to the display's upstream Thunderbolt port is enough for video.
@@ -34,7 +38,14 @@ Credit: the registry value was first documented for an HDR problem on driver 616
 [yangyinxu/studio-display-xdr-hdr-workaround](https://github.com/yangyinxu/studio-display-xdr-hdr-workaround).
 This repo shows it also fixes the *detection* failure (no EDID / 640x480) and adds tooling around it.
 
-## Quick start
+## App
+
+Double-click `Candela.cmd`. It asks for administrator rights once and opens the app. It shows what Windows currently
+sees (display identity, fix status, resolution, refresh, bit depth, HDR, text size) and lets you apply or restore the fix,
+pick the best mode, toggle HDR and Auto Color Management, and change text size. Everything the app does is also
+available as plain scripts below.
+
+## Quick start (scripts)
 
 Open PowerShell **as administrator** in this folder:
 
@@ -67,6 +78,7 @@ For color-critical work verify with a colorimeter; no software setting can guara
 
 ## Files
 
+- `Candela.cmd` / `App.ps1` — the desktop app (WPF, no dependencies beyond Windows PowerShell). `assets/` holds the icon.
 - `Fix-StudioDisplayXDR.ps1` — status / apply / restore of the registry fix, with backups and optional GPU restart.
 - `Set-DisplayMode.ps1` — enumerates modes and selects 5120x2880 at the highest refresh available.
 - `Display-Color.ps1` — status, ACM on/off, HDR on/off, DPI scale step via the Windows display-config API (no admin needed).
