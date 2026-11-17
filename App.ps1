@@ -5,219 +5,330 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Candela" Width="640" Height="760" MinWidth="560" MinHeight="640" ResizeMode="CanResize"
-        WindowStartupLocation="CenterScreen" Background="#1C1C1E" FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13" Foreground="#F5F5F7"
+        Title="Candela" Width="640" Height="840" MinWidth="560" MinHeight="640" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen" Background="#141518" FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13" Foreground="#ECEBE7"
+        Typography.NumeralAlignment="Tabular"
         UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType">
   <Window.Resources>
-    <SolidColorBrush x:Key="Panel" Color="#2C2C2E"/>
-    <SolidColorBrush x:Key="Separator" Color="#3A3A3C"/>
-    <SolidColorBrush x:Key="Secondary" Color="#98989D"/>
-    <SolidColorBrush x:Key="Accent" Color="#0A84FF"/>
-    <SolidColorBrush x:Key="Green" Color="#30D158"/>
-    <SolidColorBrush x:Key="Red" Color="#FF453A"/>
-    <SolidColorBrush x:Key="Orange" Color="#FF9F0A"/>
+    <!-- Graphite and ink (Kennedy Maombi's design language, dark theme): ground rgb(20 21 24), ink rgb(236 235 231),
+         secondary rgb(141 144 150), hairline rgb(42 44 49). No filled panels: each section is a keyline row on the
+         ground, a rule across the window with its index and label on the left and its rows on the right. -->
+    <SolidColorBrush x:Key="Ground" Color="#141518"/>
+    <SolidColorBrush x:Key="Ink" Color="#ECEBE7"/>
+    <SolidColorBrush x:Key="Secondary" Color="#8D9096"/>
+    <SolidColorBrush x:Key="Tertiary" Color="#63666C"/>
+    <SolidColorBrush x:Key="Line" Color="#2A2C31"/>
+    <SolidColorBrush x:Key="Rule" Color="#3A3C41"/>
+    <SolidColorBrush x:Key="Edge" Color="#4A4D53"/>
+    <SolidColorBrush x:Key="Chip" Color="#212226"/>
+    <SolidColorBrush x:Key="Night" Color="#0E0F11"/>
+    <!-- The only colour in the window: the status mark, identified or not. -->
+    <SolidColorBrush x:Key="Green" Color="#7DBA8C"/>
+    <SolidColorBrush x:Key="Red" Color="#E2674F"/>
+    <FontFamily x:Key="Figures">Bahnschrift, Segoe UI</FontFamily>
 
-    <Style x:Key="SectionTitle" TargetType="TextBlock">
-      <Setter Property="Foreground" Value="{StaticResource Secondary}"/><Setter Property="FontSize" Value="12"/>
-      <Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Margin" Value="14,22,0,6"/>
+    <Style x:Key="Keyline" TargetType="Border">
+      <Setter Property="BorderBrush" Value="{StaticResource Rule}"/><Setter Property="BorderThickness" Value="0,1,0,0"/>
+      <Setter Property="Margin" Value="0,32,0,0"/>
     </Style>
-    <Style x:Key="Group" TargetType="Border">
-      <Setter Property="Background" Value="{StaticResource Panel}"/><Setter Property="CornerRadius" Value="10"/>
-      <Setter Property="BorderBrush" Value="#3A3A3C"/><Setter Property="BorderThickness" Value="1"/>
+    <Style x:Key="Index" TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="{StaticResource Figures}"/><Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="{StaticResource Secondary}"/><Setter Property="Width" Value="30"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style x:Key="SectionLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13"/><Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
     <Style x:Key="RowLabel" TargetType="TextBlock">
       <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="FontSize" Value="13"/>
     </Style>
+    <Style x:Key="RowSub" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Secondary}"/><Setter Property="FontSize" Value="12"/>
+      <Setter Property="Margin" Value="0,3,0,0"/><Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
     <Style x:Key="RowValue" TargetType="TextBlock">
-      <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Foreground" Value="{StaticResource Secondary}"/>
-      <Setter Property="FontSize" Value="13"/><Setter Property="TextAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="FontSize" Value="13"/><Setter Property="TextAlignment" Value="Right"/>
     </Style>
     <Style x:Key="RowSep" TargetType="Rectangle">
-      <Setter Property="Height" Value="1"/><Setter Property="Fill" Value="{StaticResource Separator}"/><Setter Property="Margin" Value="14,0,0,0"/>
+      <Setter Property="Height" Value="1"/><Setter Property="Fill" Value="{StaticResource Line}"/>
+    </Style>
+    <Style x:Key="Row" TargetType="Grid">
+      <Setter Property="Margin" Value="0,13,0,13"/>
     </Style>
 
-    <!-- Buttons -->
+    <!-- Buttons: a hairline outline and 3px corners; the one primary action is ink on graphite. -->
     <Style TargetType="Button">
-      <Setter Property="Background" Value="#48484A"/><Setter Property="Foreground" Value="#F5F5F7"/>
+      <Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="{StaticResource Ink}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Edge}"/><Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Padding" Value="12,5"/><Setter Property="FontSize" Value="13"/><Setter Property="Cursor" Value="Hand"/>
       <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="MinWidth" Value="72"/>
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+            <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3" Padding="{TemplateBinding Padding}">
               <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.85"/></Trigger>
-              <Trigger Property="IsPressed" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.7"/></Trigger>
-              <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="{StaticResource Chip}"/></Trigger>
+              <Trigger Property="IsPressed" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.75"/></Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource Tertiary}"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Line}"/>
+                <Setter TargetName="b" Property="Background" Value="Transparent"/>
+              </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
     </Style>
     <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-      <Setter Property="Background" Value="{StaticResource Accent}"/><Setter Property="FontWeight" Value="SemiBold"/>
-    </Style>
-    <Style x:Key="Link" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-      <Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="{StaticResource Accent}"/><Setter Property="Padding" Value="4,2"/><Setter Property="MinWidth" Value="0"/>
-    </Style>
-
-    <!-- Toggle switch -->
-    <Style TargetType="ToggleButton">
-      <Setter Property="Width" Value="40"/><Setter Property="Height" Value="24"/><Setter Property="Cursor" Value="Hand"/><Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Background" Value="{StaticResource Ink}"/><Setter Property="BorderBrush" Value="{StaticResource Ink}"/>
+      <Setter Property="Foreground" Value="{StaticResource Ground}"/><Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate TargetType="ToggleButton">
-            <Grid>
-              <Border x:Name="track" CornerRadius="12" Background="#636366"/>
-              <Ellipse x:Name="thumb" Width="20" Height="20" Fill="White" HorizontalAlignment="Left" Margin="2,0,0,0">
-                <Ellipse.Effect><DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/></Ellipse.Effect>
-              </Ellipse>
-            </Grid>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="track" Property="Background" Value="{StaticResource Green}"/>
-                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
-                <Setter TargetName="thumb" Property="Margin" Value="0,0,2,0"/>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.88"/></Trigger>
+              <Trigger Property="IsPressed" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.75"/></Trigger>
+              <!-- Done, or not allowed: it settles into a quiet outlined label. -->
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource Secondary}"/><Setter Property="FontWeight" Value="Normal"/>
+                <Setter TargetName="b" Property="Background" Value="Transparent"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Line}"/>
               </Trigger>
-              <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="Link" TargetType="Button">
+      <Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="FontSize" Value="12"/><Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="20,0,0,0"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="Transparent" Padding="0,3"><ContentPresenter VerticalAlignment="Center"/></Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource Secondary}"/></Trigger>
+              <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{StaticResource Tertiary}"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
     </Style>
 
-    <!-- Segmented control pieces -->
+    <!-- Toggle: a squared hairline track; on, it fills with ink. -->
+    <Style TargetType="ToggleButton">
+      <Setter Property="Width" Value="36"/><Setter Property="Height" Value="20"/><Setter Property="Cursor" Value="Hand"/><Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Grid>
+              <Border x:Name="track" CornerRadius="3" Background="Transparent" BorderBrush="{StaticResource Edge}" BorderThickness="1"/>
+              <Border x:Name="thumb" Width="12" Height="12" CornerRadius="2" Background="{StaticResource Secondary}" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="track" Property="BorderBrush" Value="{StaticResource Secondary}"/></Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="track" Property="Background" Value="{StaticResource Ink}"/>
+                <Setter TargetName="track" Property="BorderBrush" Value="{StaticResource Ink}"/>
+                <Setter TargetName="thumb" Property="Background" Value="{StaticResource Ground}"/>
+                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
+                <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Segmented control pieces: one hairline frame, hairlines between. -->
     <Style x:Key="Seg" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-      <Setter Property="Background" Value="Transparent"/><Setter Property="MinWidth" Value="64"/><Setter Property="Padding" Value="10,3"/><Setter Property="FontSize" Value="12"/>
+      <Setter Property="BorderThickness" Value="0"/><Setter Property="MinWidth" Value="62"/><Setter Property="Padding" Value="10,4"/><Setter Property="FontSize" Value="12"/>
+    </Style>
+    <Style x:Key="SegSep" TargetType="Rectangle">
+      <Setter Property="Width" Value="1"/><Setter Property="Fill" Value="{StaticResource Edge}"/>
+    </Style>
+
+    <!-- Scroll bar: a thin hairline thumb, no arrows. -->
+    <Style TargetType="ScrollBar">
+      <Setter Property="Width" Value="10"/><Setter Property="MinWidth" Value="10"/><Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ScrollBar">
+            <Track x:Name="PART_Track" IsDirectionReversed="True">
+              <Track.Thumb>
+                <Thumb>
+                  <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb"><Border Background="{StaticResource Edge}" CornerRadius="2" Width="4" HorizontalAlignment="Center"/></ControlTemplate>
+                  </Thumb.Template>
+                </Thumb>
+              </Track.Thumb>
+            </Track>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Drafting: the outline in ink; dimensions and centre lines in the secondary tone. -->
+    <Style x:Key="Dim" TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="{StaticResource Figures}"/><Setter Property="FontSize" Value="9"/>
+      <Setter Property="Foreground" Value="{StaticResource Secondary}"/><Setter Property="Background" Value="{StaticResource Ground}"/>
+      <Setter Property="Padding" Value="3,0"/><Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
   </Window.Resources>
 
   <Grid>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="28,26,28,20">
+      <StackPanel Margin="32,30,32,24">
 
-        <!-- Header: display glyph + name + status -->
-        <Grid Margin="0,0,0,6">
-          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-          <Grid Width="96" Height="78" Margin="0,0,18,0" VerticalAlignment="Top">
-            <Border Width="96" Height="60" VerticalAlignment="Top" CornerRadius="6" BorderThickness="2" BorderBrush="#8E8E93" Background="#0B0B0C">
-              <Border Margin="3" CornerRadius="3">
-                <Border.Background>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#FF5E8BFF" Offset="0"/><GradientStop Color="#FF9A4DFF" Offset="0.5"/><GradientStop Color="#FFFF6A3D" Offset="1"/>
-                  </LinearGradientBrush>
-                </Border.Background>
-              </Border>
-            </Border>
-            <Rectangle Width="26" Height="12" Fill="#8E8E93" VerticalAlignment="Top" Margin="0,60,0,0" RadiusX="1" RadiusY="1"/>
-            <Rectangle Width="44" Height="4" Fill="#8E8E93" VerticalAlignment="Top" Margin="0,72,0,0" RadiusX="2" RadiusY="2"/>
-          </Grid>
-          <StackPanel Grid.Column="1" VerticalAlignment="Center">
-            <TextBlock x:Name="hTitle" Text="Studio Display XDR" FontSize="24" FontWeight="SemiBold" FontFamily="Segoe UI Variable Display, Segoe UI"/>
-            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-              <Ellipse x:Name="hDot" Width="8" Height="8" Fill="{StaticResource Green}" VerticalAlignment="Center" Margin="0,1,7,0"/>
-              <TextBlock x:Name="hStatus" Text="Checking…" Foreground="{StaticResource Secondary}" FontSize="13"/>
+        <!-- Header: the display, drawn front-on and dimensioned at its native 5120 x 2880; then its name and status -->
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Canvas Width="112" Height="90" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Line X1="3" Y1="41.5" X2="100" Y2="41.5" Stroke="{StaticResource Secondary}" StrokeThickness="1" StrokeDashArray="9 2 1.5 2" Opacity="0.6"/>
+            <Line X1="52.5" Y1="11" X2="52.5" Y2="89" Stroke="{StaticResource Secondary}" StrokeThickness="1" StrokeDashArray="9 2 1.5 2" Opacity="0.6"/>
+            <Rectangle Canvas.Left="8" Canvas.Top="16" Width="89" Height="51" RadiusX="2" RadiusY="2" Stroke="{StaticResource Ink}" StrokeThickness="1"/>
+            <Rectangle Canvas.Left="11" Canvas.Top="19" Width="83" Height="45" Stroke="{StaticResource Secondary}" StrokeThickness="1" Opacity="0.55"/>
+            <Path Data="M45.5,67 L45.5,80 M59.5,67 L59.5,80" Stroke="{StaticResource Ink}" StrokeThickness="1"/>
+            <Rectangle Canvas.Left="34" Canvas.Top="80" Width="37" Height="5" RadiusX="1" RadiusY="1" Stroke="{StaticResource Ink}" StrokeThickness="1"/>
+            <Path Data="M8.5,14 L8.5,4 M96.5,14 L96.5,4 M8.5,8.5 L96.5,8.5" Stroke="{StaticResource Secondary}" StrokeThickness="1"/>
+            <Path Data="M8.5,8.5 L15,6.8 L15,10.2 Z M96.5,8.5 L90,6.8 L90,10.2 Z" Fill="{StaticResource Secondary}"/>
+            <Grid Canvas.Left="8" Canvas.Top="2" Width="89" Height="13"><TextBlock Style="{StaticResource Dim}" Text="5120"/></Grid>
+            <Path Data="M99,16.5 L109,16.5 M99,66.5 L109,66.5 M104.5,16.5 L104.5,66.5" Stroke="{StaticResource Secondary}" StrokeThickness="1"/>
+            <Path Data="M104.5,16.5 L102.8,23 L106.2,23 Z M104.5,66.5 L102.8,60 L106.2,60 Z" Fill="{StaticResource Secondary}"/>
+            <Grid Canvas.Left="79.5" Canvas.Top="35" Width="50" Height="13" RenderTransformOrigin="0.5,0.5">
+              <Grid.RenderTransform><RotateTransform Angle="-90"/></Grid.RenderTransform>
+              <TextBlock Style="{StaticResource Dim}" Text="2880"/>
+            </Grid>
+          </Canvas>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,4,0,0">
+            <TextBlock x:Name="hTitle" Text="Studio Display XDR" FontSize="26" FontFamily="Segoe UI Variable Display, Segoe UI"/>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+              <Rectangle x:Name="hDot" Width="7" Height="7" Fill="{StaticResource Green}" VerticalAlignment="Center" Margin="0,1,9,0"/>
+              <TextBlock x:Name="hStatus" Text="Checking…" FontSize="13"/>
             </StackPanel>
-            <TextBlock x:Name="hSub" Text="" Foreground="{StaticResource Secondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+            <TextBlock x:Name="hSub" Text="" Foreground="{StaticResource Secondary}" FontSize="12" Margin="16,4,0,0" TextWrapping="Wrap"/>
           </StackPanel>
         </Grid>
 
-        <!-- Detection -->
-        <TextBlock Style="{StaticResource SectionTitle}" Text="DETECTION"/>
-        <Border Style="{StaticResource Group}">
-          <StackPanel>
-            <Grid Margin="14,11,12,11">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel>
-                <TextBlock x:Name="dTitle" Style="{StaticResource RowLabel}" Text="Display identification"/>
-                <TextBlock x:Name="dSub" Foreground="{StaticResource Secondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap" Text=""/>
-              </StackPanel>
-              <Button x:Name="bApply" Grid.Column="1" Style="{StaticResource Primary}" Content="Fix" Margin="16,0,0,0"/>
-            </Grid>
-            <Rectangle Style="{StaticResource RowSep}"/>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Style="{StaticResource RowLabel}" Text="Graphics"/>
-              <TextBlock x:Name="dGpu" Grid.Column="1" Style="{StaticResource RowValue}" Text="—"/>
-            </Grid>
-          </StackPanel>
-        </Border>
-
-        <!-- Display -->
-        <TextBlock Style="{StaticResource SectionTitle}" Text="DISPLAY"/>
-        <Border Style="{StaticResource Group}">
-          <StackPanel>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Style="{StaticResource RowLabel}" Text="Resolution"/>
-              <TextBlock x:Name="vRes" Grid.Column="1" Style="{StaticResource RowValue}" Text="—" Margin="0,0,12,0"/>
-              <Button x:Name="bMode" Grid.Column="2" Content="Use best"/>
-            </Grid>
-            <Rectangle Style="{StaticResource RowSep}"/>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Style="{StaticResource RowLabel}" Text="Refresh rate"/>
-              <TextBlock x:Name="vHz" Grid.Column="1" Style="{StaticResource RowValue}" Text="—"/>
-            </Grid>
-            <Rectangle Style="{StaticResource RowSep}"/>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Style="{StaticResource RowLabel}" Text="Color depth"/>
-              <TextBlock x:Name="vBits" Grid.Column="1" Style="{StaticResource RowValue}" Text="—"/>
-            </Grid>
-            <Rectangle Style="{StaticResource RowSep}"/>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel>
-                <TextBlock Style="{StaticResource RowLabel}" Text="Text size"/>
-                <TextBlock x:Name="vDpi" Foreground="{StaticResource Secondary}" FontSize="12" Margin="0,2,0,0" Text=""/>
-              </StackPanel>
-              <Border Grid.Column="1" Background="#3A3A3C" CornerRadius="7" Padding="2" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal">
-                  <Button x:Name="bDpiDown" Style="{StaticResource Seg}" Content="Smaller"/>
-                  <Button x:Name="bDpiDefault" Style="{StaticResource Seg}" Content="Default"/>
-                  <Button x:Name="bDpiUp" Style="{StaticResource Seg}" Content="Larger"/>
+        <!-- 01 Detection -->
+        <Border Style="{StaticResource Keyline}">
+          <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0" VerticalAlignment="Top">
+              <TextBlock Style="{StaticResource Index}" Text="01"/><TextBlock Style="{StaticResource SectionLabel}" Text="Detection"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock x:Name="dTitle" Style="{StaticResource RowLabel}" Text="Display identification"/>
+                  <TextBlock x:Name="dSub" Style="{StaticResource RowSub}" Text=""/>
                 </StackPanel>
-              </Border>
-            </Grid>
-          </StackPanel>
+                <Button x:Name="bApply" Grid.Column="1" Style="{StaticResource Primary}" Content="Fix" Margin="20,0,0,0"/>
+              </Grid>
+              <Rectangle Style="{StaticResource RowSep}"/>
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource RowLabel}" Foreground="{StaticResource Secondary}" Text="Graphics"/>
+                <TextBlock x:Name="dGpu" Grid.Column="1" Style="{StaticResource RowValue}" Text="—" TextWrapping="Wrap" Margin="16,0,0,0"/>
+              </Grid>
+            </StackPanel>
+          </Grid>
         </Border>
 
-        <!-- Color -->
-        <TextBlock Style="{StaticResource SectionTitle}" Text="COLOR"/>
-        <Border Style="{StaticResource Group}">
-          <StackPanel>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel>
-                <TextBlock Style="{StaticResource RowLabel}" Text="High Dynamic Range"/>
-                <TextBlock x:Name="cHdrSub" Foreground="{StaticResource Secondary}" FontSize="12" Margin="0,2,0,0" Text="Up to 2000 nits for HDR video and games." TextWrapping="Wrap"/>
-              </StackPanel>
-              <ToggleButton x:Name="tHdr" Grid.Column="1" Margin="16,0,0,0"/>
-            </Grid>
-            <Rectangle Style="{StaticResource RowSep}"/>
-            <Grid Margin="14,10,12,10">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel>
-                <TextBlock Style="{StaticResource RowLabel}" Text="Automatic color management"/>
-                <TextBlock x:Name="cAcmSub" Foreground="{StaticResource Secondary}" FontSize="12" Margin="0,2,0,0" Text="Accurate sRGB on the P3 panel for apps that are not color managed." TextWrapping="Wrap"/>
-              </StackPanel>
-              <ToggleButton x:Name="tAcm" Grid.Column="1" Margin="16,0,0,0"/>
-            </Grid>
-          </StackPanel>
+        <!-- 02 Display -->
+        <Border Style="{StaticResource Keyline}">
+          <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0" VerticalAlignment="Top">
+              <TextBlock Style="{StaticResource Index}" Text="02"/><TextBlock Style="{StaticResource SectionLabel}" Text="Display"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+              <Grid Margin="0,8,0,8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource RowLabel}" Foreground="{StaticResource Secondary}" Text="Resolution"/>
+                <TextBlock x:Name="vRes" Grid.Column="1" Style="{StaticResource RowValue}" Text="—" Margin="0,0,14,0"/>
+                <Button x:Name="bMode" Grid.Column="2" Content="Use best"/>
+              </Grid>
+              <Rectangle Style="{StaticResource RowSep}"/>
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource RowLabel}" Foreground="{StaticResource Secondary}" Text="Refresh rate"/>
+                <TextBlock x:Name="vHz" Grid.Column="1" Style="{StaticResource RowValue}" Text="—"/>
+              </Grid>
+              <Rectangle Style="{StaticResource RowSep}"/>
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource RowLabel}" Foreground="{StaticResource Secondary}" Text="Color depth"/>
+                <TextBlock x:Name="vBits" Grid.Column="1" Style="{StaticResource RowValue}" Text="—"/>
+              </Grid>
+              <Rectangle Style="{StaticResource RowSep}"/>
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock Style="{StaticResource RowLabel}" Foreground="{StaticResource Secondary}" Text="Text size"/>
+                  <TextBlock x:Name="vDpi" FontSize="13" Margin="0,3,0,0" Text=""/>
+                </StackPanel>
+                <Border Grid.Column="1" BorderBrush="{StaticResource Edge}" BorderThickness="1" CornerRadius="3" VerticalAlignment="Center" Margin="16,0,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <Button x:Name="bDpiDown" Style="{StaticResource Seg}" Content="Smaller"/>
+                    <Rectangle Style="{StaticResource SegSep}"/>
+                    <Button x:Name="bDpiDefault" Style="{StaticResource Seg}" Content="Default"/>
+                    <Rectangle Style="{StaticResource SegSep}"/>
+                    <Button x:Name="bDpiUp" Style="{StaticResource Seg}" Content="Larger"/>
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 03 Color -->
+        <Border Style="{StaticResource Keyline}">
+          <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0" VerticalAlignment="Top">
+              <TextBlock Style="{StaticResource Index}" Text="03"/><TextBlock Style="{StaticResource SectionLabel}" Text="Color"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Style="{StaticResource RowLabel}" Text="High Dynamic Range"/>
+                  <TextBlock x:Name="cHdrSub" Style="{StaticResource RowSub}" Text="Up to 2000 nits for HDR video and games."/>
+                </StackPanel>
+                <ToggleButton x:Name="tHdr" Grid.Column="1" Margin="20,0,0,0"/>
+              </Grid>
+              <Rectangle Style="{StaticResource RowSep}"/>
+              <Grid Style="{StaticResource Row}">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Style="{StaticResource RowLabel}" Text="Automatic color management"/>
+                  <TextBlock x:Name="cAcmSub" Style="{StaticResource RowSub}" Text="Accurate sRGB on the P3 panel for apps that are not color managed."/>
+                </StackPanel>
+                <ToggleButton x:Name="tAcm" Grid.Column="1" Margin="20,0,0,0"/>
+              </Grid>
+            </StackPanel>
+          </Grid>
         </Border>
 
         <!-- Footer -->
-        <Grid Margin="4,22,0,0">
-          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <TextBlock x:Name="fNote" Foreground="#6E6E73" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Text=""/>
-          <Button x:Name="bRestore" Grid.Column="1" Style="{StaticResource Link}" Content="Restore original…"/>
-          <Button x:Name="bDetails" Grid.Column="2" Style="{StaticResource Link}" Content="Details"/>
-        </Grid>
-        <Border x:Name="LogPanel" Style="{StaticResource Group}" Margin="0,10,0,0" Visibility="Collapsed">
-          <TextBox x:Name="Log" Background="Transparent" Foreground="#C7C7CC" BorderThickness="0" FontFamily="Cascadia Mono, Consolas" FontSize="11" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="160" Padding="12,8"/>
+        <Border Style="{StaticResource Keyline}">
+          <Grid Margin="0,14,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock x:Name="fNote" Foreground="{StaticResource Secondary}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Text=""/>
+            <Button x:Name="bRestore" Grid.Column="1" Style="{StaticResource Link}" Content="Restore original…"/>
+            <Button x:Name="bDetails" Grid.Column="2" Style="{StaticResource Link}" Content="Details"/>
+          </Grid>
+        </Border>
+        <Border x:Name="LogPanel" Background="{StaticResource Night}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="3" Margin="0,12,0,0" Visibility="Collapsed">
+          <TextBox x:Name="Log" Background="Transparent" Foreground="#B9BBBF" BorderThickness="0" FontFamily="Cascadia Mono, Consolas" FontSize="11" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="160" Padding="12,8"/>
         </Border>
       </StackPanel>
     </ScrollViewer>
@@ -226,6 +337,14 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 "@
 $reader = New-Object System.Xml.XmlNodeReader $xaml
 $win = [Windows.Markup.XamlReader]::Load($reader)
+# Title bar in the window's graphite (Windows 11 draws the caption and border colours; older builds ignore it).
+try {
+  Add-Type -Namespace Candela -Name Dwm -MemberDefinition '[DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);'
+  $win.Add_SourceInitialized({
+    $h = (New-Object System.Windows.Interop.WindowInteropHelper $win).Handle
+    foreach ($a in @(@(20, 1), @(35, 0x00181514), @(34, 0x00312C2A), @(36, 0x00E7EBEC))) { $v = [int]$a[1]; [void][Candela.Dwm]::DwmSetWindowAttribute($h, $a[0], [ref]$v, 4) }
+  })
+} catch {}
 $iconPath = Join-Path $Root 'assets\icon.ico'
 if (Test-Path $iconPath) { $win.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create((New-Object System.Uri $iconPath)) }
 $ui = @{}; foreach ($n in 'hTitle','hDot','hStatus','hSub','dTitle','dSub','bApply','dGpu','vRes','bMode','vHz','vBits','vDpi','bDpiDown','bDpiDefault','bDpiUp','cHdrSub','tHdr','cAcmSub','tAcm','fNote','bRestore','bDetails','LogPanel','Log') { $ui[$n] = $win.FindName($n) }
